@@ -1,10 +1,8 @@
-﻿using System.Net.Http;
 using System;
 using System.Windows;
 
 namespace CzajaPorownanie
 {
-
     public partial class MainWindow : Window
     {
         public MainWindow()
@@ -12,46 +10,52 @@ namespace CzajaPorownanie
             InitializeComponent();
         }
 
-        private async void Obliczanie(object sender, RoutedEventArgs e)
+        private void Obliczanie(object sender, RoutedEventArgs e)
         {
-            /* Narazie nie   działa  obliczanie bo nic tu nie ma
-            var client = new HttpClient();
-            var request = new HttpRequestMessage
+            try
             {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri("https://api-mock.dhl.com/mydhlapi/rates" +
-                                                                            "?accountNumber=" +
-                                                                            "&originCountryCode=" +
-                                                                            "&originCityName=" +
-                                                                            "&destinationCountryCode=" +
-                                                                            "&destinationCityName=" +
-                                                                            "&weight=" +
-                                                                            "&length=" +
-                                                                            "&width=" +
-                                                                            "&height=" +
-                                                                            "&plannedShippingDate=" +
-                                                                            "&isCustomsDeclarable=false" +
-                                                                            "&unitOfMeasurement=metric"),
-                Headers =
-                {
-                    { "Message-Reference", "SOME_STRING_VALUE" },
-                    { "Message-Reference-Date", "SOME_STRING_VALUE" },
-                    { "Plugin-Name", "SOME_STRING_VALUE" },
-                    { "Plugin-Version", "SOME_STRING_VALUE" },
-                    { "Shipping-System-Platform-Name", "SOME_STRING_VALUE" },
-                    { "Shipping-System-Platform-Version", "SOME_STRING_VALUE" },
-                    { "Webstore-Platform-Name", "SOME_STRING_VALUE" },
-                    { "Webstore-Platform-Version", "SOME_STRING_VALUE" },
-                    { "Authorization", "Basic REPLACE_BASIC_AUTH" },
-                },
-            };
-            using (var response = await client.SendAsync(request))
+                double waga = double.Parse(Waga.Text);
+                double dlugosc = double.Parse(Długość.Text);
+                double szerokosc = double.Parse(Szerokość.Text);
+                double wysokosc = double.Parse(Wysokość.Text);
+
+                double dhlPrice = ObliczCeneDHL(waga, dlugosc, szerokosc, wysokosc);
+                double upsPrice = ObliczCeneUPS(waga, dlugosc, szerokosc, wysokosc);
+                double fedexPrice = ObliczCeneFedEx(waga, dlugosc, szerokosc, wysokosc);
+
+                MessageBox.Show($"Cena DHL: {dhlPrice} zł\nCena UPS: {upsPrice} zł\nCena FedEx: {fedexPrice} zł");
+            }
+            catch (FormatException)
             {
-                response.EnsureSuccessStatusCode();
-                var body = await response.Content.ReadAsStringAsync();
-                MessageBox.Show(body);
-            }*/
-            MessageBox.Show("Test chyba zadziałał , no cóz niz wiecej niema");
+                MessageBox.Show("Proszę wprowadzić poprawne dane.");
+            }
+        }
+
+        private double ObliczCeneDHL(double waga, double dlugosc, double szerokosc, double wysokosc)
+        {
+            double basePrice = 30.0;
+            double weightFactor = 5.0;
+            double sizeFactor = 1.0;
+
+            return basePrice + (waga * weightFactor) + ((dlugosc + szerokosc + wysokosc) * sizeFactor);
+        }
+
+        private double ObliczCeneUPS(double waga, double dlugosc, double szerokosc, double wysokosc)
+        {
+            double basePrice = 25.0;
+            double weightFactor = 6.0;
+            double sizeFactor = 1.5;
+
+            return basePrice + (waga * weightFactor) + ((dlugosc + szerokosc + wysokosc) * sizeFactor);
+        }
+
+        private double ObliczCeneFedEx(double waga, double dlugosc, double szerokosc, double wysokosc)
+        {
+            double basePrice = 28.0;
+            double weightFactor = 4.0;
+            double sizeFactor = 1.2;
+
+            return basePrice + (waga * weightFactor) + ((dlugosc + szerokosc + wysokosc) * sizeFactor);
         }
     }
 }
