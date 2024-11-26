@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Windows;
 
 namespace CzajaPorownanie
@@ -14,48 +15,51 @@ namespace CzajaPorownanie
         {
             try
             {
-                double waga = double.Parse(Waga.Text);
-                double dlugosc = double.Parse(Długość.Text);
-                double szerokosc = double.Parse(Szerokość.Text);
-                double wysokosc = double.Parse(Wysokość.Text);
+                double waga = double.Parse(Waga.Text, CultureInfo.InvariantCulture);
+                double dlugosc = double.Parse(Długość.Text, CultureInfo.InvariantCulture);
+                double szerokosc = double.Parse(Szerokość.Text, CultureInfo.InvariantCulture);
+                double wysokosc = double.Parse(Wysokość.Text, CultureInfo.InvariantCulture);
 
-                double dhlPrice = ObliczCeneDHL(waga, dlugosc, szerokosc, wysokosc);
-                double upsPrice = ObliczCeneUPS(waga, dlugosc, szerokosc, wysokosc);
-                double fedexPrice = ObliczCeneFedEx(waga, dlugosc, szerokosc, wysokosc);
+                Random random = new Random();
 
-                MessageBox.Show($"Cena DHL: {dhlPrice} zł\nCena UPS: {upsPrice} zł\nCena FedEx: {fedexPrice} zł");
+                double dhlCena = ObliczLosowaCene(waga, dlugosc, szerokosc, wysokosc, random);
+                double upsCena = ObliczLosowaCene(waga, dlugosc, szerokosc, wysokosc, random);
+                double fedexCena = ObliczLosowaCene(waga, dlugosc, szerokosc, wysokosc, random);
+
+                string najtanszaFirma = WyznaczNajtanszaFirme(dhlCena, upsCena, fedexCena);
+
+                Wynik.Text = $"Cena DHL: {dhlCena:F2} PLN\n" +
+                             $"Cena UPS: {upsCena:F2} PLN\n" +
+                             $"Cena FedEx: {fedexCena:F2} PLN\n\n" +
+                             $"Najtańsza oferta: {najtanszaFirma}";
             }
             catch (FormatException)
             {
-                MessageBox.Show("Proszę wprowadzić poprawne dane.");
+                MessageBox.Show("Proszę podać prawidłowe wartości.");
             }
         }
 
-        private double ObliczCeneDHL(double waga, double dlugosc, double szerokosc, double wysokosc)
+        private double ObliczLosowaCene(double waga, double dlugosc, double szerokosc, double wysokosc, Random random)
         {
-            double basePrice = 30.0;
-            double weightFactor = 5.0;
-            double sizeFactor = 1.0;
-
-            return basePrice + (waga * weightFactor) + ((dlugosc + szerokosc + wysokosc) * sizeFactor);
+            double basePrice = waga * 10 + (dlugosc + szerokosc + wysokosc) * 0.5;
+            double randomFactor = random.NextDouble() * 0.2 + 0.9;
+            return basePrice * randomFactor;
         }
 
-        private double ObliczCeneUPS(double waga, double dlugosc, double szerokosc, double wysokosc)
+        private string WyznaczNajtanszaFirme(double dhlCena, double upsCena, double fedexCena)
         {
-            double basePrice = 25.0;
-            double weightFactor = 6.0;
-            double sizeFactor = 1.5;
-
-            return basePrice + (waga * weightFactor) + ((dlugosc + szerokosc + wysokosc) * sizeFactor);
-        }
-
-        private double ObliczCeneFedEx(double waga, double dlugosc, double szerokosc, double wysokosc)
-        {
-            double basePrice = 28.0;
-            double weightFactor = 4.0;
-            double sizeFactor = 1.2;
-
-            return basePrice + (waga * weightFactor) + ((dlugosc + szerokosc + wysokosc) * sizeFactor);
+            if (dhlCena <= upsCena && dhlCena <= fedexCena)
+            {
+                return "DHL";
+            }
+            else if (upsCena <= dhlCena && upsCena <= fedexCena)
+            {
+                return "UPS";
+            }
+            else
+            {
+                return "FedEx";
+            }
         }
     }
 }
